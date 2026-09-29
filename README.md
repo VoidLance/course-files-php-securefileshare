@@ -1,203 +1,87 @@
-# Project 4: Secure File Sharing Platform
+# SecureFileShare
 
-Beginner-friendly PHP 8 starter project for a secure file sharing app.
+SecureFileShare is an educational file-sharing application built with vanilla PHP 8.1+ and a small MVC-style structure. It lets users manage files and share them through expiring links, while keeping the implementation approachable for learning and extension.
 
-This project is intentionally built in simple MVC-style vanilla PHP so students can understand every line before jumping into Laravel/Symfony.
+> **Educational project:** This starter is not production-ready. Review the security configuration and harden the application before using it with sensitive files or exposing it to the internet.
 
-## What This Starter Already Includes
+## Features
 
-- User registration, login, logout, and profile update
-- Role column (`admin`, `premium`, `regular`) in DB
-- CSRF protection for forms
-- Secure password hashing (`password_hash`)
-- File upload + drag-and-drop UI + upload progress bar
-- File encryption at rest (`AES-256-CBC` with OpenSSL)
-- File integrity check (SHA-256 checksum)
-- Folder and tag metadata on files
-- Share links with:
-  - unique tokens
-  - expiration dates
-  - optional password protection
-  - permissions (`view`, `download`, `edit`)
-  - revoke support
-- Storage quota checks per user
-- Activity logs (login, upload, download, sharing)
-- JWT helper + tiny REST API demo
-- Mobile-friendly responsive UI
+- Register, sign in, update a profile, and view a storage-usage dashboard.
+- Upload files with drag-and-drop, organize them with folders and tags, and search their names and metadata.
+- Encrypt uploaded file contents at rest with AES-256-CBC and record SHA-256 checksums for integrity checks on owner downloads.
+- Create share links with an optional password, an expiration period, and revocation.
+- Track account and file activity.
+- Explore a small JWT-based API example in `public/api.php`.
+- Use SQLite by default, with a MySQL schema available.
 
-## Full Feature Roadmap (Mapped To Your Brief)
+Uploads are currently limited to 25 MiB and an allow-list of MIME types configured in `config/app.php`. New accounts have a 50 MiB storage quota by default.
 
-### 1) User Management
+## Get started
 
-- [x] Register, login, logout
-- [x] Profile update (name/avatar URL)
-- [x] Role support in DB
-- [ ] Email verification flow
-- [ ] Optional 2FA flow (TOTP)
-- [ ] Password reset by email
+### Requirements
 
-### 2) File Management
+- PHP 8.1 or later.
+- PHP extensions: PDO with SQLite (`pdo_sqlite`), OpenSSL, and Fileinfo.
+- Write access to `database/` and `storage/uploads/`.
 
-- [x] Upload + progress bar
-- [ ] Multiple/chunked upload
-- [x] Drag/drop upload
-- [x] Folders + tags
-- [ ] Rich preview (image/pdf/text inline)
-- [ ] Versioning UI (table exists)
-- [x] Encryption at rest
+Composer is not required to run the app: `bootstrap.php` registers a small autoloader. The `composer.json` file declares the PHP requirement and optional PSR-4 autoload configuration.
 
-### 3) File Sharing
+### Run locally
 
-- [x] Share links
-- [x] Expiration date
-- [x] Password protected share link
-- [x] Granular permissions field
-- [ ] Share via email
-- [x] Revoke access
-
-### 4) Storage/Quotas
-
-- [x] Per-user quota check
-- [x] Usage dashboard
-- [ ] Premium upgrade/payment flow
-- [ ] Auto cleanup for expired links/files
-
-### 5) Search/Filter
-
-- [x] Basic search by name/folder/tags
-- [ ] Full-text content indexing
-- [ ] Advanced filters and sorting controls
-
-### 6) Collaboration
-
-- [x] Workspace and comments tables
-- [ ] Shared workspace UI/logic
-- [ ] Comments + @mention notifications
-
-### 7) Admin Panel
-
-- [ ] Admin dashboard and user management tools
-- [ ] System-wide search
-- [ ] Link monitoring/settings pages
-
-### 8) Security Features
-
-- [x] Encryption + checksum + audit logs
-- [ ] Virus scanning integration (ClamAV)
-- [ ] IP access restrictions
-- [ ] Organization sharing policy rules
-
-### 9) API
-
-- [x] Basic REST endpoint and JWT auth helper
-- [ ] OAuth 2.0 integration
-- [x] Basic rate-limiting example
-
-### 10) Mobile Responsiveness
-
-- [x] Responsive web UI
-- [ ] Native mobile app (optional)
-
-## Project Structure
-
-- `app/Controllers` - route handlers
-- `app/Models` - DB logic via PDO
-- `app/Core` - router, auth, csrf, db, jwt, encryption
-- `app/Views` - templates
-- `config/app.php` - app config
-- `database/schema.sql` - database setup
-- `database/schema.sqlite.sql` - SQLite setup (default)
-- `public` - web root (`index.php`, assets, `api.php`)
-- `storage/uploads` - encrypted file storage
-
-## Setup
-
-Default setup uses SQLite (no separate DB server needed).
-
-1. Ensure app can write to `database/` and `storage/`.
-2. Keep `db.driver` as `sqlite` in `config/app.php` (already default).
-3. Run local server from this project folder:
+From the project root, start PHP's development server:
 
 ```bash
 php -S localhost:3000 -t public
 ```
 
-4. Open:
-   - `http://localhost:3000`
+Open [http://localhost:3000](http://localhost:3000). SQLite is the default; if the configured database does not exist or has not been initialized, the application creates it from `database/schema.sqlite.sql` on its first request.
 
-SQLite DB file (`database/app.sqlite`) is auto-created on first request.
+1. Register at `/register`, then sign in at `/login`.
+2. Open **My Files** (`/files`) to upload a file, optionally adding a folder name and comma-separated tags.
+3. Create a share link from a file row. Set an optional password and an expiration from 1 to 30 days.
+4. Manage and revoke links from the dashboard.
 
-### Optional: Use MySQL Instead
+The SQLite schema seeds a demo administrator:
 
-1. Set `db.driver` to `mysql` in `config/app.php`.
-2. Import `database/schema.sql` into MySQL.
-3. Update MySQL credentials in `config/app.php`.
+| Email | Password |
+| --- | --- |
+| `admin@example.com` | `admin123` |
 
-Important:
-- Do not browse files inside `app/Controllers` directly in the browser.
-- Use app routes only (`/`, `/login`, `/files`, etc.) through `public/index.php`.
+This account is for local demonstrations only. Change or remove it before deployment, and do not expose a default installation to the public internet.
 
-Default seeded admin user:
-- Email: `admin@example.com`
-- Password: `admin123`
+### Configuration
 
-## API Quick Test
+The active settings are in [`config/app.php`](config/app.php). In particular, set unique, secret values for `security.app_key` and `security.jwt_secret` before use beyond local development. Changing the encryption key makes existing encrypted uploads unreadable, so keep it safe and backed up.
 
-1. Log in via web UI first.
-2. Request token:
+The `.env.example` file lists example settings but is not loaded by the application. Update `config/app.php` to change the database driver, credentials, upload limits, or storage path.
 
-```bash
-curl -X POST http://localhost:3000/api/token
-```
+### Optional MySQL setup
 
-3. Use token:
+1. Create the database and tables by importing [`database/schema.sql`](database/schema.sql) into MySQL 8+.
+2. Change the `db` settings in `config/app.php` to use the `mysql` driver and your database credentials.
+3. Ensure `pdo_mysql` is enabled in PHP.
 
-```bash
-curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:3000/api/files
-```
+## Project layout
 
-## Replication Checklist (Feature-by-Feature)
+- `app/Controllers/` — request handlers
+- `app/Core/` — routing, authentication, database, CSRF, sessions, and encryption
+- `app/Models/` — database access
+- `app/Views/` — page templates
+- `config/app.php` — application configuration
+- `database/` — SQLite and MySQL schemas and the local SQLite database
+- `public/` — web document root, entry points, and static assets
+- `storage/uploads/` — encrypted uploaded file contents
 
-Use this when you want proof a feature works, not just vibes.
+When deploying, configure the web server's document root to `public/`; do not serve the project root, `app/`, `config/`, `database/`, or `storage/` directly.
 
-1. Register and login
-   - Open `/register`, create user, then login at `/login`.
-2. Upload with encryption at rest
-   - Go to `/files`, drag and drop a file, click upload.
-   - Verify file appears in table and can be downloaded.
-3. Confirm quota enforcement
-   - Temporarily lower `storage_quota_bytes` for your user in DB.
-   - Upload a larger file and confirm quota error appears.
-4. Confirm share link expiry/password
-   - Create share link with password and 1-day expiry.
-   - Open shared URL in private window, enter password, download file.
-   - Revoke link from dashboard and confirm it returns gone/invalid.
-5. Confirm activity logs
-   - Login, upload, download, create/revoke share.
-   - Check `activity_logs` table for corresponding events.
-6. Confirm API auth and rate limit
-   - Request `/api/token` while logged in.
-   - Call `/api/files` with bearer token.
-   - Hammer API >60 requests/minute and confirm HTTP 429.
+## Help and documentation
 
-## Important Student Notes
+This README and the source code are the project documentation; there is no separate documentation site. For questions, bug reports, or feature requests, [open an issue](https://github.com/VoidLance/course-files-php-securefileshare/issues). For questions about a specific feature, include the relevant route or file and steps to reproduce the issue.
 
-- This starter is educational, not production-ready.
-- For production: use proper env config, strict CSP headers, secure cookies, queue workers, object storage (S3), and malware scanning.
-- Yes, some TODO boxes are unchecked on purpose. That is your semester adventure.
+The project is maintained by [@VoidLance](https://github.com/VoidLance).
 
-## Troubleshooting
+## Contributing
 
-- Error: `Database connection failed. Your SQL server is either sleeping or offended.`
-   - Cause: app is configured for MySQL, but MySQL is not running or credentials are wrong.
-   - Fast fix: switch to SQLite in `config/app.php` by setting `db.driver` to `sqlite`.
+Contributions are welcome. Open an issue to discuss larger changes, then submit a focused pull request with a clear description and any relevant manual test steps. Keep changes suitable for the project's educational scope and update this README when setup or user-facing behavior changes.
 
-- Error: `GET /SecureFileShare/app/Controllers/FileController.php ... 500`
-   - Cause: a controller class file was requested directly as a page.
-   - Fix: run server with public root and open app routes:
-
-```bash
-php -S localhost:3000 -t public
-```
-
-Then open `http://localhost:3000` (or `http://localhost:3001` if port 3000 is busy).
+There is no separate contribution guide or license file in this repository.
