@@ -78,6 +78,8 @@ When deploying, configure the web server's document root to `public/`; do not se
 
 This README and the source code are the project documentation; there is no separate documentation site. For questions, bug reports, or feature requests, [open an issue](https://github.com/VoidLance/course-files-php-securefileshare/issues). For questions about a specific feature, include the relevant route or file and steps to reproduce the issue.
 
+The project is maintained by [@VoidLance](https://github.com/VoidLance).
+
 ## Contributing
 
 Contributions are welcome. Open an issue to discuss larger changes, then submit a focused pull request with a clear description and any relevant manual test steps. Keep changes suitable for the project's educational scope and update this README when setup or user-facing behavior changes.
